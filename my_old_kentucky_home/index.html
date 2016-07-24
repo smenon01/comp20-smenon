@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>My Old Kentucky Home</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+<h1 id="title">My Old Kentucky Home</h1>
+
+<video src="https://www.cs.tufts.edu/comp/20/my_old_kentucky_home.mp4" id="music_video" controls></video>
+<div id="lyrics"></div>
+
+<script type="text/javascript"> 
+	var vid = document.getElementById("music_video"); 
+	var lyric = document.getElementById("lyrics");
+	
+	vid.addEventListener("timeupdate", function() {
+	
+		if (vid.currentTime < 8) {
+			lyric.innerHTML = '<p><img src = "title_card.jpg" alt = "Title"/> </p>';
+			
+		}
+		else if (vid.currentTime > 8 && vid.currentTime < 34) {
+			lyric.innerHTML = '<img src = "ky_badge.png" alt = "Badge"/>' + 
+							"<p> The sun shines bright in My Old Kentucky Home," + 
+							"<br>'Tis summer, the people are gay;" +
+							"<br>The corn-top's ripe and the meadow's in the bloom" +
+							"<br>While the birds make music all the day</p>"; 
+		
+		}
+		else if (vid.currentTime > 34 && vid.currentTime < 63) {
+			lyric.innerHTML = '<img src = "flag.gif" alt = "Flag"/>' + 
+							"<p> The young folks roll on the little cabin floor," + 
+							"<br>All merry, all happy and bright;" +
+							"<br>By 'n' by hard times comes a knocking at the door," +
+							"<br>Then My Old Kentucky Home, good night!</p>";
+		
+		}
+		else if (vid.currentTime > 63 && vid.currentTime < 92) {
+			lyric.innerHTML = '<img src = "kentucky_quarter.jpg" alt = "Quarter" />' +
+							"<p> Weep no more my lady" +
+							"<br>Oh weep no more today;" +
+							"<br>We will sing one song" +
+							"<br>For My Old Kentucky Home" +
+							"<br>For My Old Kentucky Home, far away</p>";
+		}
+		else {
+			lyric.innerHTML = "";
+		
+		}
+	}); 
+	
+</script>
+</body>
+</html>
