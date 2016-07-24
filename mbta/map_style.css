@@ -1,9 +1,8 @@
-/* Absolutely necessary for Google Maps version 3 - EDIT*/
+/* Taken from geolocation examples */
 html {
 	height: 100%;
 }
 
-/* Absolutely necessary for Google Maps version 3 */
 body {
 	height: 100%;
 	margin: 0px;
