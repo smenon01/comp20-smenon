@@ -1,0 +1,3 @@
+This lab maps the geolocations of the MBTA red line subway stations, with the map taking up the entire page (CSS file used for Google Maps to show up). Each station is labeled with a marker of a specific image (MBTA logo), and the map should be centered on South Station. A red polyline is connected to each station on the red line. All of the javascript code is separated from the html file (external file).
+
+Approximate time spent: 2-3.5 hours
