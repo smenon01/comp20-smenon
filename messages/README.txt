@@ -1,0 +1,5 @@
+The lab parses data from a JSON file using the XMLHttpRequest object, and output the data to a section of the html page.
+
+Approximate time spent: 1 hour
+
+The data does not load when using data from a local machine or with the given URI. You cannot request data from a different origin or your local machine using XMLHttpRequest because of security reasons. Opening up a file locally could potentially lead to uploading malicious or dangerous documents/scripts into your browser. Additionally, exchanging or interacting with data from a different origin also can lead to security risks, and opens up browsers to attacks from cross-site scripting. With the same-origin policy, only pages with the same origin can read and modify each other’s content, to prevent potentially dangerous websites from having access to sensitive data, controls, or resources on another page. Interactions from websites with different origins can occur if Cross-Origin Request Sharing (CORS) is allowed from the server you are requesting from.
