@@ -1,1 +1,17 @@
 /* Your CSS here... */
+
+#messages {
+	font-family: "Arial";
+	font-size: 15px;
+}
+
+p {
+	background-color: #44e120;
+	border-radius: 5px;
+    padding: 5px;
+}
+
+#smaller {
+	font-size: 12px;
+
+}
