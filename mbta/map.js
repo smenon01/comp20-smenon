@@ -66,14 +66,16 @@ function setUp()
 		
 		marker.addListener('click', function() {
        		var words = " ";
-        	for (i = 0; i < schedule["TripList"]["Trips"].length; i++) {
-          		if (schedule["TripList"]["Trips"][i]["Predictions"][0]["Stop"] == this.title 
-          		&& schedule["TripList"]["Trips"][i]["Predictions"][0]["Seconds"] > 0) {
-          			words += "<p>" + schedule["TripList"]["Trips"][i]["Destination"] + " bound: "
-          				+ schedule["TripList"]["Trips"][i]["Predictions"][0]["Seconds"] +
-          				" seconds " + "</p>";
-          		}	
-          	}
+          	for (i = 0; i < schedule["TripList"]["Trips"].length; i++) {
+				for (j = 0; j < schedule["TripList"]["Trips"][i]["Predictions"].length; j++) {
+					if (schedule["TripList"]["Trips"][i]["Predictions"][j]["Stop"] == this.title 
+					&& schedule["TripList"]["Trips"][i]["Predictions"][j]["Seconds"] > 0) {
+						words += "<p>" + schedule["TripList"]["Trips"][i]["Destination"] + " bound: " 
+							+ schedule["TripList"]["Trips"][i]["Predictions"][j]["Seconds"] +
+							" seconds " + "</p>";
+					}
+				}
+			}
           	window.setContent(this.title + " - " + "<p>" +  words + "</p>");
           	window.open(map, this);		
 		});        
