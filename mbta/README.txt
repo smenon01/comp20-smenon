@@ -1,3 +1,3 @@
-This lab maps the geolocations of the MBTA red line subway stations, with the map taking up the entire page (CSS file used for Google Maps to show up). Each station is labeled with a marker of a specific image (MBTA logo), and the map should be centered on South Station. A red polyline is connected to each station on the red line. All of the javascript code is separated from the html file (external file).
+This lab is a continuation from last week’s mbta lab: this time, the user’s geolocation is determined, and indicated by a marker on the map (different from the markers for the subway stations). A polyline is drawn from the user’s marker/location to the closest subway station and when pressing the user marker, the info window displays which station is closest and the distance away is miles (this distance is calculated using the Haversine formula, and the JS code used in this lab is from: http://stackoverflow.com/questions/14560999/using-the-haversine-formula-in- javascript). Also, when each subway station is clicked on, the info window displays the upcoming trains at that station. 
 
-Approximate time spent: 2-3.5 hours
+Approximate time spent: 4-5 hours
