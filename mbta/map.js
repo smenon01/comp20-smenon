@@ -1,7 +1,20 @@
 // map.js
 
+request = new XMLHttpRequest();
+request.open("GET", "https://sheltered-forest-5520.herokuapp.com/redline.json", true);
+request.onreadystatechange = setUp;
+request.send(null);
+
 function setUp()
 {
+	if (request.readyState == 4 && request.status == 200) {
+		data = request.responseText;
+		schedule = JSON.parse(data);
+	}
+	else if (request.readyState == 4 && request.status != 200) {
+		alert("fail");
+	}
+	
 	//set South Station first, as center
 	var center = new google.maps.LatLng(42.352271, -71.05524200000001);
 	
@@ -13,28 +26,28 @@ function setUp()
 
 	var map = new google.maps.Map(document.getElementById("map_canvas"), setMap);
 	
-	var stations = [["Alewife Station", 42.395428, -71.142483],
-					["Davis Station", 42.39674, -71.121815],
-					["Porter Square Station", 42.3884, -71.11914899999999],
-					["Harvard Square Station", 42.373362, -71.118956],
-					["Central Square Station", 42.365486, -71.103802],
-					["Kendall/MIT Station", 42.36249079, -71.08617653],
-					["Charles/MGH Station", 42.361166, -71.070628],
-					["Park Street Station", 42.35639457, -71.0624242],
-					["Downtown Crossing Station", 42.355518, -71.060225],
+	var stations = [["Alewife", 42.395428, -71.142483],
+					["Davis", 42.39674, -71.121815],
+					["Porter Square", 42.3884, -71.11914899999999],
+					["Harvard Square", 42.373362, -71.118956],
+					["Central Square", 42.365486, -71.103802],
+					["Kendall/MIT", 42.36249079, -71.08617653],
+					["Charles/MGH", 42.361166, -71.070628],
+					["Park Street", 42.35639457, -71.0624242],
+					["Downtown Crossing", 42.355518, -71.060225],
 					["South Station", 42.352271, -71.05524200000001],
-					["Broadway Station", 42.342622, -71.056967],
-					["Andrew Station", 42.330154, -71.057655],
-					["JFK/UMass Station", 42.320685, -71.052391],
-					["Savin Hill Station", 42.31129, -71.053331],
+					["Broadway", 42.342622, -71.056967],
+					["Andrew", 42.330154, -71.057655],
+					["JFK/UMass", 42.320685, -71.052391],
+					["Savin Hill", 42.31129, -71.053331],
 					["Fields Corner", 42.300093, -71.061667],
-					["Shawmut Station", 42.29312583, -71.06573796000001],
-					["Ashmont Station", 42.284652, -71.06448899999999],
-					["North Quincy Station", 42.275275, -71.029583],
-					["Wollaston Station", 42.2665139, -71.0203369],
-					["Quincy Center Station", 42.251809, -71.005409],
-					["Quincy Adams Station", 42.233391, -71.007153],
-					["Braintree Station", 42.2078543, -71.0011385]];
+					["Shawmut", 42.29312583, -71.06573796000001],
+					["Ashmont", 42.284652, -71.06448899999999],
+					["North Quincy", 42.275275, -71.029583],
+					["Wollaston", 42.2665139, -71.0203369],
+					["Quincy Center", 42.251809, -71.005409],
+					["Quincy Adams", 42.233391, -71.007153],
+					["Braintree", 42.2078543, -71.0011385]];
 					
 	var markers = [stations.length];
 	var window = new google.maps.InfoWindow();
@@ -47,27 +60,31 @@ function setUp()
 			position: pos,
 			title: stations[i][0],
 			icon: 'mbta.png',
-			map: map //add marker to map
+			map: map 
 		});
 		markers.push(marker); // add to markers array
 		
-		//Googled this -- how to get 1 info window for multiple markers
-        marker.addListener('click', (function(marker, i) {
-          return function() {
-          	window.setContent(marker.title);
-          	window.open(map, marker);
-          }
-        })(marker, i));        
-
+		marker.addListener('click', function() {
+       		var words = " ";
+        	for (i = 0; i < schedule["TripList"]["Trips"].length; i++) {
+          		if (schedule["TripList"]["Trips"][i]["Predictions"][0]["Stop"] == this.title 
+          		&& schedule["TripList"]["Trips"][i]["Predictions"][0]["Seconds"] > 0) {
+          			words += "<p>" + schedule["TripList"]["Trips"][i]["Destination"] + " bound: "
+          				+ schedule["TripList"]["Trips"][i]["Predictions"][0]["Seconds"] +
+          				" seconds " + "</p>";
+          		}	
+          	}
+          	window.setContent(this.title + " - " + "<p>" +  words + "</p>");
+          	window.open(map, this);		
+		});        
 	} 	
 		
-	//add polyline
+	//add polylines
 	var p1 = [];
 	var p2 = [];
 	for (var i = 0; i < 17; i++) {
 		p1.push(positions[i]);
 	}
-	
 	var path1 = new google.maps.Polyline({
 		path: p1,
 		geodesic: true,
@@ -90,4 +107,87 @@ function setUp()
 	 });
 	path2.setMap(map);
 	
+	//current location
+	var myLat; 
+	var myLng;
+	
+	navigator.geolocation.getCurrentPosition(function (position) {
+		success(position);
+		var me = new google.maps.LatLng(myLat, myLng);
+		var myLocation = new google.maps.Marker({
+			position: me,
+			map: map,
+			title: 'You are here'
+		});
+		var close = findClosest(position);
+		var inMiles = haversine(stations[close][1], stations[close][2])* 0.621371; 
+	
+		var link = [];
+		link.push(me);
+		link.push(positions[close]);
+	
+		var path3 = new google.maps.Polyline({
+			path: link,
+			geodesic: true, 
+			strokeColor: '#3333ff',
+			strokeOpacity: 1.0,
+			strokeWeight: 2
+		});
+		path3.setMap(map);
+		
+		var contentString = '<h1>' + stations[close][0] + '</h1>' +
+							'<p>' + inMiles + " miles" + '</p>';
+		
+		myLocation.addListener('click', function() {
+			window.setContent(contentString);
+			window.open(map, myLocation);
+		});
+	});
+	
+	function success(position) {
+		myLat = position.coords.latitude;
+		myLng = position.coords.longitude;
+	}	
+	function findClosest(position) {
+		var min = 0; //index of station in array that is minimum distance
+		
+		var latOther = stations[0][1];
+		var lngOther = stations[0][2];	
+			
+		var distance = haversine(latOther, lngOther);
+		for (var i = 1; i < stations.length; i++) {
+			latOther = stations[i][1];
+			lngOther = stations[i][2];
+			var nextDist = haversine(latOther, lngOther);
+			if (nextDist < distance) {
+				min = i;
+			}
+		}
+		return min;
+	}
+	// Haversine Formula implementation found: 
+		//http://stackoverflow.com/questions/14560999/using-the-haversine-formula-in-javascript	
+	function haversine(la2, ln2) {
+		Number.prototype.toRad = function() {
+			return this * Math.PI / 180;
+		}
+		var lat1 = myLat;
+		var lng1 = myLng;
+		var lat2 = la2;
+		var lng2 = ln2;	
+		
+		var R = 6371;
+		var x1 = lat2-lat1; 
+		var dLat = x1.toRad();
+		var x2 = lng2-lng1;
+		var dLon = x2.toRad(); 
+		var a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
+				Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *
+				Math.sin(dLon/2) * Math.sin(dLon/2);  
+		var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        var d = R * c; 
+        return d;
+    }	
 }
+
+
