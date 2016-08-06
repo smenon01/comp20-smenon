@@ -1,7 +1,8 @@
 // map.js
 
 request = new XMLHttpRequest();
-request.open("GET", "https://sheltered-forest-5520.herokuapp.com/redline.json", true);
+//request.open("GET", "https://sheltered-forest-5520.herokuapp.com/redline.json", true);
+request.open("GET", "https://still-ridge-53158.herokuapp.com/redline.json", true);
 request.onreadystatechange = setUp;
 request.send(null);
 
