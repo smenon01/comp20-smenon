@@ -2,15 +2,40 @@
 
 request = new XMLHttpRequest();
 //request.open("GET", "https://sheltered-forest-5520.herokuapp.com/redline.json", true);
-request.open("GET", "https://still-ridge-53158.herokuapp.com/redline.json", true);
-request.onreadystatechange = setUp;
-request.send(null);
+requestPost = new XMLHttpRequest();
 
+var myLat; 
+var myLng;
+
+
+navigator.geolocation.getCurrentPosition(function (position) {
+	success(position);
+	//request.open("GET", "http://localhost:5000/redline.json", true);
+	request.open("GET", "https://still-ridge-53158.herokuapp.com/redline.json", true);
+	request.onreadystatechange = setUp;
+	request.send(null);	
+});
+
+function success(position) {
+	myLat = position.coords.latitude;
+	myLng = position.coords.longitude;
+} 
+	
 function setUp()
 {
+	//requestPost.open("POST", "http://localhost:5000/position?lat=" + myLat + "&lng=" + myLng, true);
+	
 	if (request.readyState == 4 && request.status == 200) {
 		data = request.responseText;
 		schedule = JSON.parse(data);
+		
+		requestPost.onreadystatechange = function () {
+		if (requestPost.readyState == 4 && requestPost.status == 200) {
+			console.log("POST complete");
+		}
+		};
+		requestPost.open("POST", "https://still-ridge-53158.herokuapp.com/position?lat=" + myLat + "&lng=" + myLng, true);
+		requestPost.send(null);
 	}
 	else if (request.readyState == 4 && request.status != 200) {
 		alert("fail");
@@ -111,8 +136,6 @@ function setUp()
 	path2.setMap(map);
 	
 	//current location
-	var myLat; 
-	var myLng;
 	
 	navigator.geolocation.getCurrentPosition(function (position) {
 		success(position);
@@ -147,10 +170,10 @@ function setUp()
 		});
 	});
 	
-	function success(position) {
+	/*function success(position) {
 		myLat = position.coords.latitude;
 		myLng = position.coords.longitude;
-	}	
+	}	*/
 	function findClosest(position) {
 		var min = 0; //index of station in array that is minimum distance
 		
