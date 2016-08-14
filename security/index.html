@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+			<title>Security Report of Vulnerable App</title>
+			<link href = "stylesheet.css" rel = "stylesheet"  />
+
+	</head>
+	
+	<body>
+			<h1>Security Assessment of Vulnerable App</h1>
+			
+			<p>Surya Menon &bull; 8/14/2016 &bull; COMP20 </p>
+			
+			<h2>Introduction</h2>
+			<p>This page has the security assessment of a potentially vulnerable 
+			web application, developed as part of the Comp20 Week 6 Assignment. This application 
+			allows users to "check-in" (similar Foursquare, but titled "Not Foursquare"), by
+			providing their username and location (longitude and latitude coordinates). All
+			users checked-in are displayed on the root page. Users can additionally search
+			for a particular username's check-in(s). The objective of this assessment
+			was to look for potential security and privacy issues in this application,
+			as well as possible solutions.</p>
+			
+			<h2>Methodology</h2>
+			<p>Testing for vulnerabilities was done through a combination of black-box
+			testing (without reading the source code) as well as looking into the source code itself
+			for potential issues, and subsequently conducting white-box testing. The code was run 
+			and tested locally on my own computer, using the <code>curl</code> tool when making POST
+			requests. Additionally, when running locally, I connected to a local mongo instance.</p>
+			
+			<h2>Abstract of Findings</h2>
+			<p>The security issues found in this application are predominantly 
+			related to putting too much trust into user input, without proper 
+			validation and escaping. This unchecked input can enable a potential attacker
+			to: submit code that could be sent back to and subsequently affect other users, or
+			conduct searches on the database connected to the application that reveal more
+			information than they should. Additionally, a privacy issue was found in how 
+			data submitted by other users to the database becomes easily accessible.</p>
+			
+			<h2>Issues Found</h2>
+			<ol>
+			<li><span class = "stronger">Cross-Site Scripting (XSS)</span>
+			<ul>
+			<li> Found when making GET request</li>
+			<li> Severity - <span class = "bolden">High</span>: This is a pretty significant security risk, in particular
+			to other client/sites accessing the application, that can be impacted by 
+			potentially harmful user inputs. </li>
+			<li> This issue was discovered when submitting data via POST request, for example:
+			<code>curl --data "login=Socrates &lt;script&gtalert('All we are is dust in the wind');&lt/script&gt&lat=0&lng=0" http://localhost:3000/sendLocation</code>. 
+			While the data for locations (longitude and latitude) are validated before being 
+			put in the database, the login query data is not sanitized or validated, and 
+			therefore JavaScript can be put in its place. When running a subsequent GET request, 
+			this code is echoed and executed on a client browser. In the example above, an 
+			<code>alert</code> window is loaded before we are then able to see the list of check-ins, with the 
+			newest at the top (pictured below). Another example of data submitted into
+			the login could be: <code>login=Squirtle&lt;script&gtwindow.location.href = 'https://
+			www.youtube.com/watch?v=2v74oV4qXRI';&lt/script&gt</code>, which would end up reloading
+			the page to a different website; this could be particularly dangerous if
+			a client using this application is suddenly rerouted to a malicious website.</li>
+			<img class = "center" src = "alert_after.png" alt = "After Alert Example" />
+			<li> Resolution: Escape potentially problematic characters in the user input 
+			before putting into the database (i.e. <code>&lt, &gt, &amp</code>) using
+			<code>escape(login)</code>. Additionally, OWASP recommends to also conduct input validation, 
+			such as using a whitelist to determine if the input is only using 
+			specified characters (<code>validator.isWhitelisted()</code>), and if the input
+			is the correct length and format (<code>validator.isLength()</code> and 
+			<code>validator.matches()</code> methods). Furthermore, escaping 
+			updates can be conducted in the database to previous submissions.</li>
+			</ul></li>
+			<li><span class = "stronger">MongoDB injection</span> 
+			<ul>
+			<li> Found when making a GET via <code>/checkins.json</code> route</li>
+			<li> Severity - <span class = "bolden">Moderate</span>: The attacker cannot perform any query on the database,
+			however, can perform queries that make data easily available to anyone
+			through simple modifications.</li>
+			<li> This issue was discovered when looking at code for the making user search
+			for specific user check-ins, which uses a GET request. The Mongo database conducts 
+			the search through the collection with the login parameter, but this input is 
+			not escaped or fully validated. Therefore, entering a query such 
+			as <code>login[$ne]=" "</code> results in bringing back all of the data in the 
+			database, instead of the specific check-in result. This is problematic in that 
+			an attacker can have access to all of the entries in the database, and if there 
+			is other sensitive data stored in other fields in the documents, these will 
+			also be exposed.</li> 
+			<img class="center" src = "Injection.png" alt = "Injection Example" /> 
+			<li> Resolution: Similar to above, validate input as a particular type and format or as 
+			only accepting particular values (such as alphanumeric only, <code>validator.isAlphanumeric()</code>),
+			and sanitize by escaping common HTML characters and removing other special 
+			characters (i.e. <code>$</code>) with a whitelist of characters.</li>
+			</ul></li>
+			<li><span class = "stronger">Returning all inputs in database to user after POST</span>
+			<ul>
+			<li> Found when making a POST via <code>/sendLocation</code> route</li>
+			<li> Severity - <span class = "bolden">Moderate</span>: Using a POST request and being returned data from the 
+			database is problematic, because it makes potentially sensitive data easily available,
+			similar to the issue above. A database collection's entire contents should not be so easily 
+			shared from a simple data submission.</li>
+			<li> This issue was discovered when using the <code>curl</code> tool to make
+			a POST request to the web application, specifically: <code>curl --data "login=Sirius Black&lat=-55&lng=99" http://localhost:3000/sendLocation</code>.
+			After this request is sent, all of the documents in the database collection are returned
+			for the user making the submission to see. This practice is a significant privacy issue 
+			because documents could have other fields with potentially sensitive data stored in them. 
+			If a user makes a POST request, they should not then be able to see everything in 
+			the collection. Similar to the injection issue above, this vulnerability could make 
+			data too accessible to attackers. While this particular web application is not
+			necessarily storing any sensitive information, if modified in the future to do so, this
+			could pose a significant problem.</li> 
+			<img class="center" src = "post_request_return.png" alt = "POST request return" /> 
+			<li> Resolution: Instead of traversing through the collection and returning each
+			document, only the user's submitted data stored in the variable <code>toInsert</code> should
+			be sent back in the response: <code>response.send(toInsert);</code>.
+			</ul></li>
+			</ol>
+			
+			<h2>Conclusion</h2>
+			<p> The solutions provided should help reduce the web application's vulnerability
+			to potentially harmful user input, as well as limit any one user's access
+			to data submitted to the application's database. Furthermore, perhaps
+			implementing some type of verification of the user when entering data into
+			the application could also reduce untrusted input submission.</p>
+			
+	</body>
+	
+</html>
